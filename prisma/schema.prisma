@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum DriveAssignmentStatus {
+  ASSIGNED
+  ACCEPTED
+  ATTENDED
+  SHORTLISTED
+  SELECTED
+  REJECTED
+}
+
+enum ResultStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  password       String
+  role           UserRole
+  studentProfile StudentProfile?
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model StudentProfile {
+  id             String            @id @default(cuid())
+  userId         String            @unique
+  user           User              @relation(fields: [userId], references: [id])
+  department     String
+  cgpa           Float
+  backlogs       Int               @default(0)
+  skills         String
+  certifications String?
+  resumeUrl      String?
+  isVerified     Boolean           @default(false)
+  assignments    DriveAssignment[]
+  results        PlacementResult[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model Company {
+  id              String           @id @default(cuid())
+  name            String
+  role            String
+  package         Float
+  minCgpa         Float
+  allowedBacklogs Int
+  requiredSkills  String
+  drives          PlacementDrive[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model PlacementDrive {
+  id          String            @id @default(cuid())
+  companyId   String
+  company     Company           @relation(fields: [companyId], references: [id])
+  driveDate   DateTime
+  venue       String
+  status      String            @default("UPCOMING")
+  assignments DriveAssignment[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model DriveAssignment {
+  id               String                @id @default(cuid())
+  studentProfileId String
+  studentProfile   StudentProfile        @relation(fields: [studentProfileId], references: [id])
+  placementDriveId String
+  placementDrive   PlacementDrive        @relation(fields: [placementDriveId], references: [id])
+  status           DriveAssignmentStatus @default(ASSIGNED)
+  result           PlacementResult?
+  assignedAt       DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+}
+
+model PlacementResult {
+  id               String         @id @default(cuid())
+  assignmentId     String         @unique
+  assignment       DriveAssignment @relation(fields: [assignmentId], references: [id])
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+  offerLetterUrl   String?
+  proofUrl         String?
+  packageOffered   Float?
+  status           ResultStatus   @default(PENDING)
+  adminNote        String?
+  submittedAt      DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  createdAt DateTime @default(now())
+}

@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/lib/generated/prisma
+
+# seed & utility scripts
+seed.js
+create-admin.js
+
+# personal files
+public/*.pdf
+public/*.htm
