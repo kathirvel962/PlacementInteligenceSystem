@@ -1,33 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
+export function proxy(request: NextRequest) {
+  const token = request.cookies.get("token")?.value;
 
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const token = req.cookies.get("token")?.value;
-
-  if (pathname.startsWith("/student") || pathname.startsWith("/admin")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/auth/login", req.url));
-    }
-    try {
-      const { payload } = await jwtVerify(token, JWT_SECRET);
-      const role = payload.role as string;
-
-      if (pathname.startsWith("/admin") && role !== "ADMIN") {
-        return NextResponse.redirect(new URL("/student/dashboard", req.url));
-      }
-      if (pathname.startsWith("/student") && role !== "STUDENT") {
-        return NextResponse.redirect(new URL("/admin/dashboard", req.url));
-      }
-    } catch {
-      return NextResponse.redirect(new URL("/auth/login", req.url));
-    }
+  if (!token && request.nextUrl.pathname.startsWith("/admin")) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/student/:path*", "/admin/:path*"],
+  matcher: ["/admin/:path*", "/student/:path*"],
 };
