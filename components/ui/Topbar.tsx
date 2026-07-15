@@ -24,15 +24,15 @@ export default function Topbar({ name = "User", role = "ADMIN" }: TopbarProps) {
           {name.charAt(0).toUpperCase()}
         </div>
         <div>
-          <p className="text-sm font-bold text-indigo-950">Welcome, {name} 👋</p>
+          <p className="text-sm font-bold text-indigo-950">Welcome, {name}</p>
           <p className="text-xs text-indigo-400">{isAdmin ? "Placement Officer · Admin" : "Student"}</p>
         </div>
       </div>
       <button
         onClick={handleLogout}
-        className="flex items-center gap-2 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl shadow-sm shadow-rose-200"
+        className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl shadow-sm shadow-rose-200"
       >
-        <span>⏻</span> Logout
+        Logout
       </button>
     </div>
   );
